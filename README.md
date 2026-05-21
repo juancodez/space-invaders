@@ -10,7 +10,7 @@ Hope you enjoy it as much as I enjoyed building it 👾
 
 Play the Game
 
-
+https://space-invaders-ten-cyan.vercel.app/
 
 About
 Built as an experimental project
