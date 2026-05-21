@@ -125,70 +125,13 @@ function sndBossHit(){beep(440,'sawtooth',.07,.12);}
 function sndMarch(idx){beep(MARCH_FREQS[idx%4],'square',.065,.07);}  // quiet accent over music
 function sndLevelClear(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,'square',.16,.22),i*145));}
 
-// ── chiptune music engine ─────────────────────────────────────────────
-const MUS=(function(){
-  // A-minor arcade theme, 155 BPM, 16th-note grid (64 steps = 4 bars)
-  const BPM=155, S=60/BPM/4;
-  const ML=[  // melody (Hz, 0=rest/sustain)
-    659,  0,523,  0, 440,392,440,  0,  523,  0,659,  0, 784,  0,880,  0,
-    784,  0,698,659, 587,  0,523,  0,  494,523,440,  0,   0,  0,  0,  0,
-    523,  0,440,  0, 392,330,392,  0,  440,  0,523,  0,  659,  0,784,  0,
-    698,  0,659,587, 523,  0,494,  0,  440,  0,392,  0,  330,  0,  0,  0
-  ];
-  const BL=[  // bass (Hz)
-    220,0,0,0, 130,0,0,0, 196,0,0,0, 220,0,0,0,
-    220,0,0,0, 175,0,0,0, 165,0,0,0, 220,0,0,0,
-    196,0,0,0, 130,0,0,0, 165,0,0,0, 196,0,0,0,
-    175,0,0,0, 165,0,0,0, 220,0,0,0, 110,0,0,0
-  ];
-  let on=false,idx=0,nxt=0,tid=null;
-  function tone(hz,t,type,vol,dur){
-    if(!hz)return;
-    const o=AC.createOscillator(),g=AC.createGain();
-    o.type=type;o.frequency.value=hz;
-    g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
-    o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+dur+.01);
-  }
-  function hh(t){
-    const buf=AC.createBuffer(1,~~(AC.sampleRate*.028),AC.sampleRate),d=buf.getChannelData(0);
-    for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1);
-    const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();
-    f.type='highpass';f.frequency.value=8000;
-    g.gain.setValueAtTime(.038,t);g.gain.exponentialRampToValueAtTime(.0001,t+.022);
-    s.buffer=buf;s.connect(f);f.connect(g);g.connect(AC.destination);s.start(t);
-  }
-  function kick(t){
-    const o=AC.createOscillator(),g=AC.createGain();
-    o.type='sine';o.frequency.setValueAtTime(185,t);o.frequency.exponentialRampToValueAtTime(28,t+.14);
-    g.gain.setValueAtTime(.42,t);g.gain.exponentialRampToValueAtTime(.0001,t+.16);
-    o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+.17);
-  }
-  function snare(t){
-    const buf=AC.createBuffer(1,~~(AC.sampleRate*.08),AC.sampleRate),d=buf.getChannelData(0);
-    for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(1-i/d.length);
-    const s=AC.createBufferSource(),g=AC.createGain();
-    g.gain.setValueAtTime(.16,t);g.gain.exponentialRampToValueAtTime(.0001,t+.07);
-    s.buffer=buf;s.connect(g);g.connect(AC.destination);s.start(t);
-    tone(200,t,'triangle',.07,.05);
-  }
-  function sched(){
-    while(nxt<AC.currentTime+.15){
-      const i=idx%ML.length;
-      tone(ML[i],nxt,'square',.055,S*.75);
-      tone(BL[i],nxt,'square',.09,S*.88);
-      if(i%2===0)hh(nxt);
-      if(i%16===0)kick(nxt);
-      if(i%16===8)snare(nxt);
-      idx++;nxt+=S;
-    }
-    if(on)tid=setTimeout(sched,50);
-  }
-  return{
-    get playing(){return on;},
-    start(){if(on)return;acUp();on=true;nxt=AC.currentTime+.08;sched();},
-    stop(){on=false;if(tid)clearTimeout(tid);}
-  };
-})();
+// ── background music ──────────────────────────────────────────────────
+const MUS={
+  _a:Object.assign(new Audio('sound-mp3.mp3'),{loop:true,volume:0.65}),
+  get playing(){return!this._a.paused;},
+  start(){this._a.play().catch(()=>{});},
+  stop(){this._a.pause();}
+};
 
 // ── sprite helper ────────────────────────────────────────────────────
 function sp(key,fr,ccx,ccy,dw,dh,rot,cw,ch){
