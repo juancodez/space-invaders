@@ -1,0 +1,8 @@
+Legacy Collection/
+Legacy Collection.zip
+*.psd
+*.zip
+__pycache__/
+*.py
+.DS_Store
+space-invaders.html
