@@ -127,7 +127,7 @@ function sndLevelClear(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f
 
 // ── background music ──────────────────────────────────────────────────
 const MUS={
-  _a:Object.assign(new Audio('sound-mp3.mp3'),{loop:true,volume:0.65}),
+  _a:Object.assign(new Audio('sound-music.mp3'),{loop:true,volume:0.65}),
   get playing(){return!this._a.paused;},
   start(){this._a.play().catch(()=>{});},
   stop(){this._a.pause();}
